@@ -11,6 +11,18 @@ const SyllabusModel = {
     return result.insertId;
   },
 
+  async findByCourseId(courseId) {
+    const [rows] = await db.query(
+      `SELECT s.*, c.title AS course_title
+       FROM syllabuses s
+       INNER JOIN courses c ON c.id = s.course_id AND c.deleted_at IS NULL
+       WHERE s.course_id = ?
+       ORDER BY s.created_at DESC`,
+      [courseId]
+    );
+    return rows;
+  },
+
   async findById(id) {
     const [rows] = await db.query(
       `SELECT s.*, c.title AS course_title
@@ -55,6 +67,61 @@ const SyllabusModel = {
       [syllabus_id, title, description || null, image || null, order_index]
     );
     return result.insertId;
+  },
+
+  async update(id, { title, description }) {
+    const updates = [];
+    const params = [];
+    
+    if (title !== undefined) { updates.push('title = ?'); params.push(title); }
+    if (description !== undefined) { updates.push('description = ?'); params.push(description); }
+    
+    if (updates.length === 0) return 0;
+    
+    params.push(id);
+    const query = `UPDATE syllabuses SET ${updates.join(', ')} WHERE id = ?`;
+    const [result] = await db.query(query, params);
+    return result.affectedRows;
+  },
+
+  async delete(id) {
+    const [result] = await db.query(
+      `DELETE FROM syllabuses WHERE id = ?`,
+      [id]
+    );
+    return result.affectedRows;
+  },
+
+  async findOutlineById(outlineId) {
+    const [rows] = await db.query(
+      `SELECT * FROM syllabus_outlines WHERE id = ?`,
+      [outlineId]
+    );
+    return rows[0] || null;
+  },
+
+  async updateOutline(outlineId, { title, description, order_index }) {
+    const updates = [];
+    const params = [];
+    
+    if (title !== undefined) { updates.push('title = ?'); params.push(title); }
+    if (description !== undefined) { updates.push('description = ?'); params.push(description); }
+    if (order_index !== undefined) { updates.push('order_index = ?'); params.push(order_index); }
+    
+    if (updates.length === 0) return 0;
+    
+    params.push(outlineId);
+    const query = `UPDATE syllabus_outlines SET ${updates.join(', ')} WHERE id = ?`;
+    const [result] = await db.query(query, params);
+    return result.affectedRows;
+  },
+
+  async deleteOutline(outlineId) {
+    const [result] = await db.query(
+      `DELETE FROM syllabus_outlines WHERE id = ?`,
+      [outlineId]
+    );
+    return result.affectedRows;
   },
 };
 

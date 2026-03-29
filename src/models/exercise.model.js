@@ -57,6 +57,70 @@ const ExerciseModel = {
     const [result] = await db.query(`DELETE FROM exercises WHERE id = ?`, [id]);
     return result.affectedRows;
   },
+
+  async recordAttempt({ user_id, exercise_id, answer, is_correct, score }) {
+    const [result] = await db.query(
+      `INSERT INTO exercise_attempts (user_id, exercise_id, answer, is_correct, score)
+       VALUES (?, ?, ?, ?, ?)`,
+      [user_id, exercise_id, answer, is_correct, score]
+    );
+    return result.insertId;
+  },
+
+  async getAttemptsByCourse(courseId) {
+    const [rows] = await db.query(
+      `SELECT 
+         ea.id,
+         ea.user_id,
+         ea.exercise_id,
+         ea.answer,
+         ea.is_correct,
+         ea.score,
+         ea.attempted_at,
+         u.name AS student_name,
+         u.email AS student_email,
+         e.question AS exercise_title,
+         e.points,
+         c.id AS chapter_id,
+         c.title AS chapter_title,
+         co.id AS course_id
+       FROM exercise_attempts ea
+       INNER JOIN users u ON u.id = ea.user_id
+       INNER JOIN exercises e ON e.id = ea.exercise_id
+       INNER JOIN chapters c ON c.id = e.chapter_id AND c.deleted_at IS NULL
+       INNER JOIN courses co ON co.id = c.course_id AND co.deleted_at IS NULL
+       WHERE co.id = ?
+       ORDER BY ea.attempted_at DESC`,
+      [courseId]
+    );
+    return rows;
+  },
+
+  async getStudentAttempts(userId, courseId) {
+    const [rows] = await db.query(
+      `SELECT 
+         ea.id,
+         ea.user_id,
+         ea.exercise_id,
+         ea.answer,
+         ea.is_correct,
+         ea.score,
+         ea.attempted_at,
+         e.question AS exercise_title,
+         e.points,
+         c.id AS chapter_id,
+         c.title AS chapter_title,
+         co.id AS course_id
+       FROM exercise_attempts ea
+       INNER JOIN exercises e ON e.id = ea.exercise_id
+       INNER JOIN chapters c ON c.id = e.chapter_id AND c.deleted_at IS NULL
+       INNER JOIN courses co ON co.id = c.course_id AND co.deleted_at IS NULL
+       WHERE ea.user_id = ? AND co.id = ?
+       ORDER BY ea.attempted_at DESC`,
+      [userId, courseId]
+    );
+    return rows;
+  },
 };
 
 module.exports = ExerciseModel;

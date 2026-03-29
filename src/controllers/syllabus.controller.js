@@ -107,6 +107,137 @@ const SyllabusController = {
       next(err);
     }
   },
+
+  /**
+   * @swagger
+   * /api/syllabuses/{id}:
+   *   put:
+   *     summary: Update a syllabus
+   *     tags: [Syllabuses]
+   *     security:
+   *       - BearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema: { type: integer }
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               title:       { type: string }
+   *               description: { type: string }
+   *     responses:
+   *       200:
+   *         description: Syllabus updated
+   *       404:
+   *         description: Syllabus not found
+   */
+  async updateSyllabus(req, res, next) {
+    try {
+      const syllabus = await SyllabusService.updateSyllabus(req.params.id, req.body);
+      return success(res, syllabus, 'Syllabus updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @swagger
+   * /api/syllabuses/{id}:
+   *   delete:
+   *     summary: Delete a syllabus
+   *     tags: [Syllabuses]
+   *     security:
+   *       - BearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema: { type: integer }
+   *     responses:
+   *       200:
+   *         description: Syllabus deleted
+   *       404:
+   *         description: Syllabus not found
+   */
+  async deleteSyllabus(req, res, next) {
+    try {
+      const result = await SyllabusService.deleteSyllabus(req.params.id);
+      return success(res, result, 'Syllabus deleted successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @swagger
+   * /api/syllabuses/outlines/{outlineId}:
+   *   put:
+   *     summary: Update a syllabus outline
+   *     tags: [Syllabuses]
+   *     security:
+   *       - BearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: outlineId
+   *         required: true
+   *         schema: { type: integer }
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               title:       { type: string }
+   *               description: { type: string }
+   *               order_index: { type: integer }
+   *     responses:
+   *       200:
+   *         description: Outline updated
+   *       404:
+   *         description: Outline not found
+   */
+  async updateOutline(req, res, next) {
+    try {
+      const result = await SyllabusService.updateOutline(req.params.outlineId, req.body);
+      return success(res, result, 'Outline updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @swagger
+   * /api/syllabuses/outlines/{outlineId}:
+   *   delete:
+   *     summary: Delete a syllabus outline
+   *     tags: [Syllabuses]
+   *     security:
+   *       - BearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: outlineId
+   *         required: true
+   *         schema: { type: integer }
+   *     responses:
+   *       200:
+   *         description: Outline deleted
+   *       404:
+   *         description: Outline not found
+   */
+  async deleteOutline(req, res, next) {
+    try {
+      const result = await SyllabusService.deleteOutline(req.params.outlineId);
+      return success(res, result, 'Outline deleted successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = SyllabusController;

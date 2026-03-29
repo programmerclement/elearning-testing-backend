@@ -9,12 +9,15 @@ const swaggerUi    = require('swagger-ui-express');
 const swaggerSpec  = require('./config/swagger');
 
 // ── Routes ──────────────────────────────────────────────────────────────────
+const authRoutes             = require('./routes/auth.routes');
 const dashboardRoutes        = require('./routes/dashboard.routes');
 const courseRoutes           = require('./routes/course.routes');
 const chapterNestedRoutes    = require('./routes/chapter.routes');        // POST /api/courses/:courseId/chapters
 const chapterStandaloneRoutes = require('./routes/chapterStandalone.routes'); // /api/chapters/:chapterId/...
 const syllabusRoutes         = require('./routes/syllabus.routes');
 const paymentRoutes          = require('./routes/payment.routes');
+const reviewRoutes           = require('./routes/review.routes');
+const progressRoutes         = require('./routes/progress.routes');
 
 // ── Middlewares ──────────────────────────────────────────────────────────────
 const errorHandler = require('./middlewares/error.middleware');
@@ -43,12 +46,15 @@ app.use(
 // Expose raw spec as JSON (useful for Postman import)
 app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
 
-// ── API Routes ───────────────────────────────────────────────────────────────
+// ── API Routes ───────────────────────────────────────────────────────────
+app.use('/api/auth',        authRoutes);
 app.use('/api/dashboard',   dashboardRoutes);
 app.use('/api/courses',     courseRoutes);
 app.use('/api/courses/:courseId/chapters', chapterNestedRoutes);
 app.use('/api/chapters',    chapterStandaloneRoutes);
 app.use('/api/syllabuses',  syllabusRoutes);
+app.use('/api/reviews',     reviewRoutes);
+app.use('/api/progress',    progressRoutes);
 app.use('/api',             paymentRoutes);   // mounts /api/invoices/preview + /api/payments
 
 // ── Health Check ─────────────────────────────────────────────────────────────

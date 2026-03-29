@@ -56,6 +56,26 @@ const CourseModel = {
     return { ...courses[0], chapters };
   },
 
+  async update(id, { title, description, price, category, level, language, thumbnail }) {
+    const updates = [];
+    const params = [];
+    
+    if (title !== undefined) { updates.push('title = ?'); params.push(title); }
+    if (description !== undefined) { updates.push('description = ?'); params.push(description); }
+    if (price !== undefined) { updates.push('price = ?'); params.push(price); }
+    if (category !== undefined) { updates.push('category = ?'); params.push(category); }
+    if (level !== undefined) { updates.push('level = ?'); params.push(level); }
+    if (language !== undefined) { updates.push('language = ?'); params.push(language); }
+    if (thumbnail !== undefined) { updates.push('thumbnail = ?'); params.push(thumbnail); }
+
+    if (updates.length === 0) return 0;
+
+    params.push(id);
+    const query = `UPDATE courses SET ${updates.join(', ')} WHERE id = ? AND deleted_at IS NULL`;
+    const [result] = await db.query(query, params);
+    return result.affectedRows;
+  },
+
   async updateStatus(id, status) {
     const [result] = await db.query(
       `UPDATE courses SET status = ? WHERE id = ? AND deleted_at IS NULL`,

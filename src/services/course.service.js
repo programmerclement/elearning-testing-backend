@@ -23,6 +23,19 @@ const CourseService = {
     return CourseModel.findById(id);
   },
 
+  async updateCourse(id, body, user) {
+    const course = await CourseModel.findById(id);
+    if (!course) throw notFound('Course not found');
+    if (course.instructor_id !== user.id) throw badRequest('Not authorized to update this course');
+    if (course.status === 'published') throw badRequest('Cannot update a published course');
+
+    const { title, description, price, category, level, language, thumbnail } = body;
+    const affectedRows = await CourseModel.update(id, { title, description, price, category, level, language, thumbnail });
+    if (!affectedRows) throw badRequest('No fields to update');
+
+    return CourseModel.findById(id);
+  },
+
   async getCourseById(id) {
     const course = await CourseModel.findById(id);
     if (!course) throw notFound('Course not found');

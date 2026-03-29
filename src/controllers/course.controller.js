@@ -1,6 +1,7 @@
 'use strict';
 
 const CourseService = require('../services/course.service');
+const SyllabusService = require('../services/syllabus.service');
 const { success, created } = require('../utils/response');
 
 const CourseController = {
@@ -98,6 +99,32 @@ const CourseController = {
 
   /**
    * @swagger
+   * /api/courses/{courseId}/syllabuses:
+   *   get:
+   *     summary: Get all syllabuses for a course
+   *     tags: [Courses]
+   *     parameters:
+   *       - in: path
+   *         name: courseId
+   *         required: true
+   *         schema: { type: integer }
+   *     responses:
+   *       200:
+   *         description: List of syllabuses for the course
+   *       404:
+   *         description: Course not found
+   */
+  async getCourseSyllabuses(req, res, next) {
+    try {
+      const syllabuses = await SyllabusService.getSyllabusByCourseId(req.params.courseId);
+      return success(res, syllabuses);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @swagger
    * /api/courses/{courseId}/publish:
    *   put:
    *     summary: Publish a course (change status to published)
@@ -129,8 +156,8 @@ const CourseController = {
   /**
    * @swagger
    * /api/courses/{courseId}:
-   *   delete:
-   *     summary: Soft delete a course
+   *   put:
+   *     summary: Update course details (title, description, price, etc.)
    *     tags: [Courses]
    *     security:
    *       - BearerAuth: []
@@ -139,12 +166,36 @@ const CourseController = {
    *         name: courseId
    *         required: true
    *         schema: { type: integer }
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               title:       { type: string,  example: "Updated Course Title" }
+   *               description: { type: string,  example: "Updated description" }
+   *               price:       { type: number,  example: 59.99 }
+   *               category:    { type: string,  example: "Web Development" }
+   *               level:       { type: string,  enum: [beginner, intermediate, advanced], example: "advanced" }
+   *               language:    { type: string,  example: "English" }
    *     responses:
    *       200:
-   *         description: Course deleted
+   *         description: Course updated
+   *       400:
+   *         description: Validation error or not authorized
    *       404:
    *         description: Course not found
    */
+  async updateCourse(req, res, next) {
+    try {
+      const course = await CourseService.updateCourse(req.params.courseId, req.body, req.user);
+      return success(res, course, 'Course updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async deleteCourse(req, res, next) {
     try {
       const result = await CourseService.deleteCourse(req.params.courseId);

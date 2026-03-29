@@ -8,11 +8,11 @@ USE elearning_db;
 -- USERS
 -- ============================================================
 INSERT INTO users (id, name, email, password, role, avatar) VALUES
-  (1, 'Alice Instructor', 'alice@elearn.com', '$2b$10$hashedpassword1', 'instructor', '/uploads/avatars/alice.jpg'),
-  (2, 'Bob Student',      'bob@elearn.com',   '$2b$10$hashedpassword2', 'student',    '/uploads/avatars/bob.jpg'),
-  (3, 'Carol Student',    'carol@elearn.com', '$2b$10$hashedpassword3', 'student',    NULL),
-  (4, 'Dave Admin',       'dave@elearn.com',  '$2b$10$hashedpassword4', 'admin',      NULL),
-  (5, 'Eve Student',      'eve@elearn.com',   '$2b$10$hashedpassword5', 'student',    NULL)
+  (1, 'Alice Instructor', 'alice@elearn.com', '$2b$10$tZb4J7u8qW8qQ2L5mZx9P.vK3K8Y2m1N9o8P7q6r5s4t3', 'instructor', '/uploads/avatars/alice.jpg'),
+  (2, 'Bob Student',      'bob@elearn.com',   '$2b$10$tZb4J7u8qW8qQ2L5mZx9P.vK3K8Y2m1N9o8P7q6r5s4t3', 'student',    '/uploads/avatars/bob.jpg'),
+  (3, 'Carol Student',    'carol@elearn.com', '$2b$10$tZb4J7u8qW8qQ2L5mZx9P.vK3K8Y2m1N9o8P7q6r5s4t3', 'student',    NULL),
+  (4, 'Dave Admin',       'dave@elearn.com',  '$2b$10$tZb4J7u8qW8qQ2L5mZx9P.vK3K8Y2m1N9o8P7q6r5s4t3', 'admin',      NULL),
+  (5, 'Eve Student',      'eve@elearn.com',   '$2b$10$tZb4J7u8qW8qQ2L5mZx9P.vK3K8Y2m1N9o8P7q6r5s4t3', 'student',    NULL)
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- ============================================================

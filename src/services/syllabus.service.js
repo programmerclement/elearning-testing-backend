@@ -18,6 +18,23 @@ const SyllabusService = {
     return SyllabusModel.findById(id);
   },
 
+  async getSyllabusByCourseId(courseId) {
+    const course = await CourseModel.findById(courseId);
+    if (!course) throw notFound('Course not found');
+    
+    const syllabuses = await SyllabusModel.findByCourseId(courseId);
+    
+    // Fetch outlines for each syllabus
+    const syllabusesWithOutlines = await Promise.all(
+      syllabuses.map(async (syllabus) => {
+        const fullSyllabus = await SyllabusModel.findByIdWithOutlines(syllabus.id);
+        return fullSyllabus;
+      })
+    );
+    
+    return syllabusesWithOutlines;
+  },
+
   async getSyllabus(id) {
     const syllabus = await SyllabusModel.findByIdWithOutlines(id);
     if (!syllabus) throw notFound('Syllabus not found');
@@ -42,6 +59,34 @@ const SyllabusService = {
     });
 
     return SyllabusModel.findByIdWithOutlines(syllabusId);
+  },
+
+  async updateSyllabus(id, body) {
+    const syllabus = await SyllabusModel.findById(id);
+    if (!syllabus) throw notFound('Syllabus not found');
+
+    const { title, description } = body;
+    await SyllabusModel.update(id, { title, description });
+    return SyllabusModel.findByIdWithOutlines(id);
+  },
+
+  async deleteSyllabus(id) {
+    const syllabus = await SyllabusModel.findById(id);
+    if (!syllabus) throw notFound('Syllabus not found');
+
+    await SyllabusModel.delete(id);
+    return { message: 'Syllabus deleted successfully' };
+  },
+
+  async updateOutline(outlineId, body) {
+    const { title, description, order_index } = body;
+    await SyllabusModel.updateOutline(outlineId, { title, description, order_index });
+    return SyllabusModel.findOutlineById(outlineId);
+  },
+
+  async deleteOutline(outlineId) {
+    await SyllabusModel.deleteOutline(outlineId);
+    return { message: 'Outline deleted successfully' };
   },
 };
 

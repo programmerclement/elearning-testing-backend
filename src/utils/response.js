@@ -30,4 +30,34 @@ const serverError = (message = 'Internal server error') => {
   return err;
 };
 
-module.exports = { success, created, paginated, notFound, badRequest, serverError };
+/**
+ * New unified response functions for auth and other endpoints
+ */
+const successResponse = (res, response = {}, statusCode = 200) => {
+  const { message = 'Success', data = null } = response;
+  return res.status(statusCode).json({
+    success: true,
+    message,
+    data,
+  });
+};
+
+const errorResponse = (res, message = 'An error occurred', statusCode = 500) => {
+  return res.status(statusCode).json({
+    success: false,
+    error: {
+      message,
+    },
+  });
+};
+
+module.exports = { 
+  success, 
+  created, 
+  paginated, 
+  notFound, 
+  badRequest, 
+  serverError,
+  successResponse,
+  errorResponse,
+};
