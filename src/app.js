@@ -15,9 +15,12 @@ const courseRoutes           = require('./routes/course.routes');
 const chapterNestedRoutes    = require('./routes/chapter.routes');        // POST /api/courses/:courseId/chapters
 const chapterStandaloneRoutes = require('./routes/chapterStandalone.routes'); // /api/chapters/:chapterId/...
 const syllabusRoutes         = require('./routes/syllabus.routes');
+const couponRoutes           = require('./routes/coupon.routes');
 const paymentRoutes          = require('./routes/payment.routes');
 const reviewRoutes           = require('./routes/review.routes');
 const progressRoutes         = require('./routes/progress.routes');
+const followersRoutes        = require('./routes/followers.routes');
+const userRoutes             = require('./routes/user.routes');
 
 // ── Middlewares ──────────────────────────────────────────────────────────────
 const errorHandler = require('./middlewares/error.middleware');
@@ -53,8 +56,11 @@ app.use('/api/courses',     courseRoutes);
 app.use('/api/courses/:courseId/chapters', chapterNestedRoutes);
 app.use('/api/chapters',    chapterStandaloneRoutes);
 app.use('/api/syllabuses',  syllabusRoutes);
+app.use('/api/coupons',     couponRoutes);
 app.use('/api/reviews',     reviewRoutes);
 app.use('/api/progress',    progressRoutes);
+app.use('/api/followers',   followersRoutes);
+app.use('/api/users',       userRoutes);
 app.use('/api',             paymentRoutes);   // mounts /api/invoices/preview + /api/payments
 
 // ── Health Check ─────────────────────────────────────────────────────────────

@@ -212,3 +212,41 @@ CREATE TABLE IF NOT EXISTS reviews (
   INDEX idx_reviews_course (course_id),
   INDEX idx_reviews_rating (rating)
 ) ENGINE=InnoDB;
+
+-- ============================================================
+-- 12. COUPONS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS coupons (
+  id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code                  VARCHAR(50)         NOT NULL UNIQUE,
+  discount_type         ENUM('percentage','fixed') NOT NULL DEFAULT 'percentage',
+  discount_value        DECIMAL(10,2)       NOT NULL,
+  max_uses              INT UNSIGNED        NULL COMMENT 'NULL = unlimited',
+  max_uses_per_user     INT UNSIGNED        NOT NULL DEFAULT 1,
+  expiry_date           DATETIME            NULL COMMENT 'NULL = no expiration',
+  description           TEXT                NULL,
+  is_deleted            TINYINT(1)          NOT NULL DEFAULT 0,
+  created_at            DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at            DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at            DATETIME            NULL,
+  INDEX idx_coupons_code    (code),
+  INDEX idx_coupons_deleted (is_deleted),
+  INDEX idx_coupons_expiry  (expiry_date)
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- 13. COUPON_USAGE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS coupon_usage (
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  coupon_id    INT UNSIGNED        NOT NULL,
+  user_id      INT UNSIGNED        NOT NULL,
+  order_id     INT UNSIGNED        NULL,
+  created_at   DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_coupon_usage_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE,
+  CONSTRAINT fk_coupon_usage_user   FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE,
+  INDEX idx_coupon_usage_coupon (coupon_id),
+  INDEX idx_coupon_usage_user   (user_id),
+  INDEX idx_coupon_usage_order  (order_id)
+) ENGINE=InnoDB;
+

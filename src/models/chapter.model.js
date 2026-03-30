@@ -3,7 +3,10 @@
 const db = require('../config/db');
 
 const ChapterModel = {
-  async create({ course_id, title, description, thumbnail, video_url, duration, order_index }) {
+  async create({
+    course_id, title, subtitle, description, intro_message,
+    thumbnail, video_url, duration, order_index, week_number, attachments
+  }) {
     // Auto-assign order_index if not provided
     if (order_index === undefined || order_index === null) {
       const [rows] = await db.query(
@@ -15,10 +18,23 @@ const ChapterModel = {
     }
 
     const [result] = await db.query(
-      `INSERT INTO chapters (course_id, title, description, thumbnail, video_url, duration, order_index)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [course_id, title, description || null, thumbnail || null,
-       video_url || null, duration || null, order_index]
+      `INSERT INTO chapters (
+        course_id, title, subtitle, description, intro_message,
+        thumbnail, video_url, duration, order_index, week_number, attachments
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        course_id,
+        title,
+        subtitle || null,
+        description || null,
+        intro_message || null,
+        thumbnail || null,
+        video_url || null,
+        duration || null,
+        order_index,
+        week_number || null,
+        attachments ? JSON.stringify(attachments) : null
+      ]
     );
     return result.insertId;
   },
@@ -50,18 +66,29 @@ const ChapterModel = {
     return result.affectedRows;
   },
 
-  async update(id, { title, description, thumbnail, video_url, duration, order_index }) {
-    const [result] = await db.query(
-      `UPDATE chapters
-       SET title = COALESCE(?, title),
-           description = COALESCE(?, description),
-           thumbnail = COALESCE(?, thumbnail),
-           video_url = COALESCE(?, video_url),
-           duration  = COALESCE(?, duration),
-           order_index = COALESCE(?, order_index)
-       WHERE id = ? AND deleted_at IS NULL`,
-      [title, description, thumbnail, video_url, duration, order_index, id]
-    );
+  async update(id, {
+    title, subtitle, description, intro_message, 
+    thumbnail, video_url, duration, order_index, week_number, attachments
+  }) {
+    const updates = [];
+    const params = [];
+
+    if (title !== undefined) { updates.push('title = ?'); params.push(title); }
+    if (subtitle !== undefined) { updates.push('subtitle = ?'); params.push(subtitle); }
+    if (description !== undefined) { updates.push('description = ?'); params.push(description); }
+    if (intro_message !== undefined) { updates.push('intro_message = ?'); params.push(intro_message); }
+    if (thumbnail !== undefined) { updates.push('thumbnail = ?'); params.push(thumbnail); }
+    if (video_url !== undefined) { updates.push('video_url = ?'); params.push(video_url); }
+    if (duration !== undefined) { updates.push('duration = ?'); params.push(duration); }
+    if (order_index !== undefined) { updates.push('order_index = ?'); params.push(order_index); }
+    if (week_number !== undefined) { updates.push('week_number = ?'); params.push(week_number); }
+    if (attachments !== undefined) { updates.push('attachments = ?'); params.push(attachments ? JSON.stringify(attachments) : null); }
+
+    if (updates.length === 0) return 0;
+
+    params.push(id);
+    const query = `UPDATE chapters SET ${updates.join(', ')} WHERE id = ? AND deleted_at IS NULL`;
+    const [result] = await db.query(query, params);
     return result.affectedRows;
   },
 };

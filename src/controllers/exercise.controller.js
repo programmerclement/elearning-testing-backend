@@ -25,7 +25,7 @@ const ExerciseController = {
   async getStudentAttempts(req, res, next) {
     try {
       const attempts = await ExerciseModel.getStudentAttempts(req.user.id, req.params.courseId);
-      return success(res, { data: attempts });
+      return success(res, attempts);
     } catch (err) {
       next(err);
     }
@@ -51,7 +51,7 @@ const ExerciseController = {
   async getAttemptsByCourse(req, res, next) {
     try {
       const attempts = await ExerciseModel.getAttemptsByCourse(req.params.courseId);
-      return success(res, { data: attempts });
+      return success(res, attempts);
     } catch (err) {
       next(err);
     }
@@ -90,12 +90,12 @@ const ExerciseController = {
   async recordAttempt(req, res, next) {
     try {
       const { answer, is_correct, score } = req.body;
-      if (!answer) throw badRequest('Answer is required');
-
+      
+      // Allow empty answers - student might not answer
       const attemptId = await ExerciseModel.recordAttempt({
         user_id: req.user.id,
         exercise_id: req.params.exerciseId,
-        answer,
+        answer: answer || null,
         is_correct: is_correct !== undefined ? is_correct : null,
         score: score !== undefined ? score : 0,
       });

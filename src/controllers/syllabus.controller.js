@@ -42,6 +42,35 @@ const SyllabusController = {
 
   /**
    * @swagger
+   * /api/syllabuses:
+   *   get:
+   *     summary: List all syllabuses with pagination
+   *     tags: [Syllabuses]
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema: { type: integer, default: 1 }
+   *       - in: query
+   *         name: limit
+   *         schema: { type: integer, default: 10 }
+   *       - in: query
+   *         name: status
+   *         schema: { type: string, enum: [draft, published, archived] }
+   *     responses:
+   *       200:
+   *         description: Paginated list of syllabuses
+   */
+  async listSyllabuses(req, res, next) {
+    try {
+      const result = await SyllabusService.listSyllabuses(req.query);
+      return res.status(200).json({ success: true, ...result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @swagger
    * /api/syllabuses/{id}:
    *   get:
    *     summary: Get a syllabus with all its outlines

@@ -87,6 +87,27 @@ const PaymentController = {
       next(err);
     }
   },
+
+  /**
+   * @swagger
+   * /api/payments:
+   *   get:
+   *     summary: Get all invoices (admin only)
+   *     tags: [Payments]
+   *     security:
+   *       - BearerAuth: []
+   *     responses:
+   *       200:
+   *         description: List of all invoices
+   */
+  async getAllInvoices(req, res, next) {
+    try {
+      const invoices = await PaymentService.getAllInvoices();
+      return success(res, invoices, 'Invoices retrieved successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = PaymentController;

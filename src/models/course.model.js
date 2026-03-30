@@ -3,12 +3,47 @@
 const db = require('../config/db');
 
 const CourseModel = {
-  async create({ instructor_id, title, description, thumbnail, price, category, level, language }) {
+  async create({
+    instructor_id,
+    title,
+    description,
+    thumbnail,
+    thumbnail_url,
+    price,
+    subscription_price,
+    category,
+    level,
+    language,
+    duration_weeks,
+    required_hours_per_week,
+    education_level,
+    target_audience,
+    objectives
+  }) {
     const [result] = await db.query(
-      `INSERT INTO courses (instructor_id, title, description, thumbnail, price, category, level, language)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [instructor_id, title, description || null, thumbnail || null,
-       price || 0, category || null, level || 'beginner', language || 'English']
+      `INSERT INTO courses (
+        instructor_id, title, description, 
+        thumbnail, thumbnail_url, price, subscription_price, 
+        category, level, language, duration_weeks, required_hours_per_week,
+        education_level, target_audience, objectives
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        instructor_id,
+        title,
+        description || null,
+        thumbnail || null,
+        thumbnail_url || null,
+        price || 0,
+        subscription_price || 0,
+        category || null,
+        level || 'beginner',
+        language || 'English',
+        duration_weeks || null,
+        required_hours_per_week || null,
+        education_level || null,
+        target_audience || null,
+        objectives || null
+      ]
     );
     return result.insertId;
   },
@@ -56,17 +91,29 @@ const CourseModel = {
     return { ...courses[0], chapters };
   },
 
-  async update(id, { title, description, price, category, level, language, thumbnail }) {
+  async update(id, {
+    title, description, price, subscription_price,
+    category, level, language, thumbnail, thumbnail_url,
+    duration_weeks, required_hours_per_week, education_level,
+    target_audience, objectives
+  }) {
     const updates = [];
     const params = [];
     
     if (title !== undefined) { updates.push('title = ?'); params.push(title); }
     if (description !== undefined) { updates.push('description = ?'); params.push(description); }
     if (price !== undefined) { updates.push('price = ?'); params.push(price); }
+    if (subscription_price !== undefined) { updates.push('subscription_price = ?'); params.push(subscription_price); }
     if (category !== undefined) { updates.push('category = ?'); params.push(category); }
     if (level !== undefined) { updates.push('level = ?'); params.push(level); }
     if (language !== undefined) { updates.push('language = ?'); params.push(language); }
     if (thumbnail !== undefined) { updates.push('thumbnail = ?'); params.push(thumbnail); }
+    if (thumbnail_url !== undefined) { updates.push('thumbnail_url = ?'); params.push(thumbnail_url); }
+    if (duration_weeks !== undefined) { updates.push('duration_weeks = ?'); params.push(duration_weeks); }
+    if (required_hours_per_week !== undefined) { updates.push('required_hours_per_week = ?'); params.push(required_hours_per_week); }
+    if (education_level !== undefined) { updates.push('education_level = ?'); params.push(education_level); }
+    if (target_audience !== undefined) { updates.push('target_audience = ?'); params.push(target_audience); }
+    if (objectives !== undefined) { updates.push('objectives = ?'); params.push(objectives); }
 
     if (updates.length === 0) return 0;
 

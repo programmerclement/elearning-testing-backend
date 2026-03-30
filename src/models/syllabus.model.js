@@ -3,32 +3,55 @@
 const db = require('../config/db');
 
 const SyllabusModel = {
-  async create({ course_id, title, description }) {
+  async create({
+    title, description, category, subscription_price,
+    education_level, target_audience, objectives, status
+  }) {
     const [result] = await db.query(
-      `INSERT INTO syllabuses (course_id, title, description) VALUES (?, ?, ?)`,
-      [course_id, title, description || null]
+      `INSERT INTO syllabuses (
+        title, description, category, subscription_price,
+        education_level, target_audience, objectives, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        title,
+        description || null,
+        category || null,
+        subscription_price || 0,
+        education_level || null,
+        target_audience || null,
+        objectives || null,
+        status || 'draft'
+      ]
     );
     return result.insertId;
   },
 
-  async findByCourseId(courseId) {
+  async findAll({ limit, offset, status }) {
+    const params = [];
+    let where = '';
+    if (status) { where = 'WHERE status = ?'; params.push(status); }
+    params.push(limit || 10, offset || 0);
+
     const [rows] = await db.query(
-      `SELECT s.*, c.title AS course_title
-       FROM syllabuses s
-       INNER JOIN courses c ON c.id = s.course_id AND c.deleted_at IS NULL
-       WHERE s.course_id = ?
-       ORDER BY s.created_at DESC`,
-      [courseId]
+      `SELECT * FROM syllabuses ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      params
     );
     return rows;
   },
 
+  async count(status) {
+    const [rows] = await db.query(
+      status 
+        ? `SELECT COUNT(*) AS total FROM syllabuses WHERE status = ?`
+        : `SELECT COUNT(*) AS total FROM syllabuses`,
+      status ? [status] : []
+    );
+    return rows[0].total;
+  },
+
   async findById(id) {
     const [rows] = await db.query(
-      `SELECT s.*, c.title AS course_title
-       FROM syllabuses s
-       INNER JOIN courses c ON c.id = s.course_id AND c.deleted_at IS NULL
-       WHERE s.id = ?`,
+      `SELECT * FROM syllabuses WHERE id = ?`,
       [id]
     );
     return rows[0] || null;
@@ -36,10 +59,7 @@ const SyllabusModel = {
 
   async findByIdWithOutlines(id) {
     const [sylRows] = await db.query(
-      `SELECT s.*, c.title AS course_title
-       FROM syllabuses s
-       INNER JOIN courses c ON c.id = s.course_id AND c.deleted_at IS NULL
-       WHERE s.id = ?`,
+      `SELECT * FROM syllabuses WHERE id = ?`,
       [id]
     );
     if (!sylRows.length) return null;
@@ -51,7 +71,9 @@ const SyllabusModel = {
     return { ...sylRows[0], outlines };
   },
 
-  async addOutline({ syllabus_id, title, description, image, order_index }) {
+  async addOutline({
+    syllabus_id, title, description, abstract, thumbnail, order_index
+  }) {
     if (order_index === undefined || order_index === null) {
       const [rows] = await db.query(
         `SELECT COALESCE(MAX(order_index), 0) + 1 AS next_order
@@ -62,19 +84,29 @@ const SyllabusModel = {
     }
 
     const [result] = await db.query(
-      `INSERT INTO syllabus_outlines (syllabus_id, title, description, image, order_index)
-       VALUES (?, ?, ?, ?, ?)`,
-      [syllabus_id, title, description || null, image || null, order_index]
+      `INSERT INTO syllabus_outlines (
+        syllabus_id, title, description, abstract, thumbnail, order_index
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+      [syllabus_id, title, description || null, abstract || null, thumbnail || null, order_index]
     );
     return result.insertId;
   },
 
-  async update(id, { title, description }) {
+  async update(id, {
+    title, description, category, subscription_price,
+    education_level, target_audience, objectives, status
+  }) {
     const updates = [];
     const params = [];
     
     if (title !== undefined) { updates.push('title = ?'); params.push(title); }
     if (description !== undefined) { updates.push('description = ?'); params.push(description); }
+    if (category !== undefined) { updates.push('category = ?'); params.push(category); }
+    if (subscription_price !== undefined) { updates.push('subscription_price = ?'); params.push(subscription_price); }
+    if (education_level !== undefined) { updates.push('education_level = ?'); params.push(education_level); }
+    if (target_audience !== undefined) { updates.push('target_audience = ?'); params.push(target_audience); }
+    if (objectives !== undefined) { updates.push('objectives = ?'); params.push(objectives); }
+    if (status !== undefined) { updates.push('status = ?'); params.push(status); }
     
     if (updates.length === 0) return 0;
     

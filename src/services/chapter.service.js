@@ -11,7 +11,10 @@ const ChapterService = {
     const course = await CourseModel.findById(courseId);
     if (!course) throw notFound('Course not found');
 
-    const { title, description, video_url, duration, order_index } = body;
+    const {
+      title, subtitle, description, intro_message,
+      video_url, duration, order_index, week_number, attachments
+    } = body;
     if (!title) throw badRequest('Chapter title is required');
 
     const thumbnail = file ? fileUrl(file) : null;
@@ -19,11 +22,15 @@ const ChapterService = {
     const id = await ChapterModel.create({
       course_id:   courseId,
       title,
+      subtitle,
       description,
+      intro_message,
       thumbnail,
       video_url:   video_url   || null,
       duration:    duration    ? parseInt(duration, 10) : null,
       order_index: order_index ? parseInt(order_index, 10) : null,
+      week_number: week_number ? parseInt(week_number, 10) : null,
+      attachments: attachments || null,
     });
 
     return ChapterModel.findById(id);
@@ -57,8 +64,8 @@ const ChapterService = {
       type:           type || 'radio',
       options:        options || null,
       correct_answer: correct_answer || null,
-      points:         points || 1,
-      order_index:    order_index || null,
+      points:         points ? parseInt(points, 10) : 1,
+      order_index:    order_index ? parseInt(order_index, 10) : null,
     });
 
     return ExerciseModel.findById(id);
@@ -83,6 +90,12 @@ const ChapterService = {
     const courseCompleted = await ProgressModel.checkAndFinalizeEnrollment(user.id, chapter.course_id);
 
     return { message: 'Chapter marked as completed', course_completed: courseCompleted };
+  },
+
+  async getCourseChapters(courseId) {
+    const course = await CourseModel.findById(courseId);
+    if (!course) throw notFound('Course not found');
+    return ChapterModel.findByCourse(courseId);
   },
 };
 

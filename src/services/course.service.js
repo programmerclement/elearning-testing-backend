@@ -6,7 +6,13 @@ const { notFound, badRequest } = require('../utils/response');
 
 const CourseService = {
   async createCourse(body, user) {
-    const { title, description, price, category, level, language } = body;
+    const {
+      title, description,
+      price, subscription_price, category, level, language,
+      duration_weeks, required_hours_per_week, education_level,
+      target_audience, objectives, thumbnail, thumbnail_url
+    } = body;
+    
     if (!title) throw badRequest('Course title is required');
 
     const id = await CourseModel.create({
@@ -14,10 +20,17 @@ const CourseService = {
       title,
       description,
       price,
+      subscription_price,
       category,
       level,
       language,
-      thumbnail: null,
+      duration_weeks,
+      required_hours_per_week,
+      education_level,
+      target_audience,
+      objectives,
+      thumbnail,
+      thumbnail_url
     });
 
     return CourseModel.findById(id);
@@ -29,8 +42,20 @@ const CourseService = {
     if (course.instructor_id !== user.id) throw badRequest('Not authorized to update this course');
     if (course.status === 'published') throw badRequest('Cannot update a published course');
 
-    const { title, description, price, category, level, language, thumbnail } = body;
-    const affectedRows = await CourseModel.update(id, { title, description, price, category, level, language, thumbnail });
+    const {
+      title, description,
+      price, subscription_price, category, level, language,
+      duration_weeks, required_hours_per_week, education_level,
+      target_audience, objectives, thumbnail, thumbnail_url
+    } = body;
+    
+    const affectedRows = await CourseModel.update(id, {
+      title, description,
+      price, subscription_price, category, level, language,
+      duration_weeks, required_hours_per_week, education_level,
+      target_audience, objectives, thumbnail, thumbnail_url
+    });
+    
     if (!affectedRows) throw badRequest('No fields to update');
 
     return CourseModel.findById(id);

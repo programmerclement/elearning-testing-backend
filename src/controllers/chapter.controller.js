@@ -7,6 +7,32 @@ const ChapterController = {
   /**
    * @swagger
    * /api/courses/{courseId}/chapters:
+   *   get:
+   *     summary: Get all chapters for a course
+   *     tags: [Chapters]
+   *     parameters:
+   *       - in: path
+   *         name: courseId
+   *         required: true
+   *         schema: { type: integer }
+   *     responses:
+   *       200:
+   *         description: List of chapters
+   *       404:
+   *         description: Course not found
+   */
+  async getCourseChapters(req, res, next) {
+    try {
+      const chapters = await ChapterService.getCourseChapters(req.params.courseId);
+      return success(res, chapters, 'Chapters retrieved successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @swagger
+   * /api/courses/{courseId}/chapters:
    *   post:
    *     summary: Add a chapter to a course (with optional thumbnail upload)
    *     tags: [Chapters]
