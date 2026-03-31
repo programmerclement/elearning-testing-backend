@@ -11,9 +11,11 @@ const swaggerSpec  = require('./config/swagger');
 // ── Routes ──────────────────────────────────────────────────────────────────
 const authRoutes             = require('./routes/auth.routes');
 const dashboardRoutes        = require('./routes/dashboard.routes');
+const instructorRoutes       = require('./routes/instructor.routes');
 const courseRoutes           = require('./routes/course.routes');
 const chapterNestedRoutes    = require('./routes/chapter.routes');        // POST /api/courses/:courseId/chapters
 const chapterStandaloneRoutes = require('./routes/chapterStandalone.routes'); // /api/chapters/:chapterId/...
+const exerciseRoutes         = require('./routes/exercise.routes');
 const syllabusRoutes         = require('./routes/syllabus.routes');
 const couponRoutes           = require('./routes/coupon.routes');
 const paymentRoutes          = require('./routes/payment.routes');
@@ -40,7 +42,7 @@ app.use(
   '/api/docs',
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
-    customSiteTitle: 'E-Learning API Docs',
+    customSiteTitle: 'Academia API Docs',
     customCss: '.swagger-ui .topbar { background-color: #1a1a2e; }',
     swaggerOptions: { persistAuthorization: true },
   })
@@ -52,9 +54,11 @@ app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
 // ── API Routes ───────────────────────────────────────────────────────────
 app.use('/api/auth',        authRoutes);
 app.use('/api/dashboard',   dashboardRoutes);
+app.use('/api/instructor',  instructorRoutes);
 app.use('/api/courses',     courseRoutes);
 app.use('/api/courses/:courseId/chapters', chapterNestedRoutes);
 app.use('/api/chapters',    chapterStandaloneRoutes);
+app.use('/api/exercises',   exerciseRoutes);
 app.use('/api/syllabuses',  syllabusRoutes);
 app.use('/api/coupons',     couponRoutes);
 app.use('/api/reviews',     reviewRoutes);

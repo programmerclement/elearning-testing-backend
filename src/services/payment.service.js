@@ -31,13 +31,15 @@ const PaymentService = {
 
   /**
    * Preview invoice — calculate fees with coupon support
+   * Used in course builder (Step 3) - allows unpublished courses
    */
   async previewInvoice(query) {
     const { course_id, coupon_code } = query;
     if (!course_id) throw badRequest('course_id query parameter is required');
 
-    const coursePrice = await PaymentModel.getCoursePrice(course_id);
-    if (coursePrice === null) throw notFound('Course not found or not published');
+    // Use builder method to allow unpublished courses (course builder workflow)
+    const coursePrice = await PaymentModel.getCoursePriceForBuilder(course_id);
+    if (coursePrice === null) throw notFound('Course not found');
 
     let discount = 0;
     let coupon = null;
@@ -127,6 +129,13 @@ const PaymentService = {
       [user_id, parseInt(query.limit || 10), (Math.max(1, parseInt(query.page || 1)) - 1) * parseInt(query.limit || 10)]
     );
     return rows;
+  },
+
+  /**
+   * Get user invoices for dashboard display
+   */
+  async getUserInvoices(user_id) {
+    return PaymentModel.getUserInvoices(user_id);
   }
 };
 

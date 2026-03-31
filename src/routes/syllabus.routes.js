@@ -8,6 +8,9 @@ const { uploadOutline } = require('../middlewares/upload.middleware');
 // List syllabuses
 router.get('/',                     controller.listSyllabuses);
 
+// Get all syllabus outlines (admin) - must be before /:id for proper routing
+router.get('/outlines',             controller.getAllOutlines);
+
 // Create syllabus (standalone)
 router.post('/',                     auth, controller.createSyllabus);
 

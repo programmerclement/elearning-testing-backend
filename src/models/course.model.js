@@ -148,11 +148,16 @@ const CourseModel = {
     const [rows] = await db.query(
       `SELECT c.*, u.name AS instructor_name,
               COUNT(DISTINCT en.id) AS enrollment_count,
+              COUNT(DISTINCT en.user_id) AS enrolled_users,
+              COUNT(DISTINCT ch.id) AS total_chapters,
+              COUNT(DISTINCT ex.id) AS total_exercises,
               ROUND(AVG(r.rating), 1) AS avg_rating
        FROM courses c
        LEFT JOIN users       u  ON u.id = c.instructor_id
        LEFT JOIN enrollments en ON en.course_id = c.id
        LEFT JOIN reviews     r  ON r.course_id  = c.id
+       LEFT JOIN chapters    ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
+       LEFT JOIN exercises   ex ON ex.chapter_id = ch.id
        ${where}
        GROUP BY c.id
        ORDER BY c.created_at DESC
@@ -168,6 +173,46 @@ const CourseModel = {
     if (status) { where += ' AND status = ?'; params.push(status); }
     const [rows] = await db.query(`SELECT COUNT(*) AS total FROM courses ${where}`, params);
     return rows[0].total;
+  },
+
+  async getEnrollmentsByCourseId(courseId) {
+    const [rows] = await db.query(
+      `SELECT 
+        en.id, 
+        en.user_id, 
+        en.course_id, 
+        en.enrolled_at AS created_at,
+        u.name AS student_name,
+        u.email AS student_email,
+        u.avatar,
+        c.title AS course_title
+       FROM enrollments en
+       LEFT JOIN users u ON u.id = en.user_id
+       LEFT JOIN courses c ON c.id = en.course_id
+       WHERE en.course_id = ?
+       ORDER BY en.enrolled_at DESC`,
+      [courseId]
+    );
+    return rows;
+  },
+
+  async getAllEnrollments() {
+    const [rows] = await db.query(
+      `SELECT 
+        en.id, 
+        en.user_id, 
+        en.course_id, 
+        en.enrolled_at AS created_at,
+        u.name AS student_name,
+        u.email AS student_email,
+        c.title AS course_title
+       FROM enrollments en
+       INNER JOIN users u ON u.id = en.user_id
+       INNER JOIN courses c ON c.id = en.course_id
+       WHERE c.deleted_at IS NULL
+       ORDER BY en.enrolled_at DESC`
+    );
+    return rows;
   },
 };
 

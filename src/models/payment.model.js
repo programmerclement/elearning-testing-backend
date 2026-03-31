@@ -8,7 +8,19 @@ const VAT_RATE         = 0.15;
 
 const PaymentModel = {
   /**
-   * Get course price for preview calculation.
+   * Get course price for course builder (Step 3) preview - allows unpublished courses
+   * Prioritize subscription_price, fall back to price field
+   */
+  async getCoursePriceForBuilder(course_id) {
+    const [rows] = await db.query(
+      `SELECT COALESCE(subscription_price, price) as price FROM courses WHERE id = ? AND deleted_at IS NULL`,
+      [course_id]
+    );
+    return rows[0] ? parseFloat(rows[0].price) : null;
+  },
+
+  /**
+   * Get course price for actual purchase - requires published course
    * Prioritize subscription_price, fall back to price field
    */
   async getCoursePrice(course_id) {
@@ -107,6 +119,25 @@ const PaymentModel = {
        LEFT JOIN users u ON u.id = inv.user_id
        LEFT JOIN courses c ON c.id = inv.course_id
        ORDER BY inv.created_at DESC`
+    );
+    return invoices;
+  },
+
+  /**
+   * Get invoices for a specific user
+   */
+  async getUserInvoices(user_id) {
+    const [invoices] = await db.query(
+      `SELECT inv.id, inv.user_id, inv.course_id, inv.subtotal, inv.service_fee, inv.vat, inv.total, 
+              inv.status, inv.payment_method, inv.transaction_ref, inv.paid_at, inv.created_at, inv.updated_at,
+              c.title AS course_title, c.thumbnail,
+              u.name AS user_name, u.email AS user_email
+       FROM invoices inv
+       LEFT JOIN courses c ON c.id = inv.course_id
+       LEFT JOIN users u ON u.id = inv.user_id
+       WHERE inv.user_id = ?
+       ORDER BY inv.created_at DESC`,
+      [user_id]
     );
     return invoices;
   },

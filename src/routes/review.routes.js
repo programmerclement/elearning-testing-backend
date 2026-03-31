@@ -7,6 +7,9 @@ const auth = require('../middlewares/auth.middleware');
 // Create review
 router.post('/', auth, controller.createReview);
 
+// Get all reviews (for admin)
+router.get('/', controller.getAllReviews);
+
 // Get all reviews for a course
 router.get('/course/:courseId', controller.getCourseReviews);
 

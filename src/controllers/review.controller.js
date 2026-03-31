@@ -150,6 +150,19 @@ const ReviewController = {
       next(err);
     }
   },
+
+  /**
+   * GET /api/reviews
+   * Get all reviews for admin
+   */
+  async getAllReviews(req, res, next) {
+    try {
+      const reviews = await ReviewModel.findAll();
+      return success(res, { reviews });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = ReviewController;

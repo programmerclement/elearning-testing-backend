@@ -140,14 +140,20 @@ const CourseController = {
    *       200:
    *         description: Course published
    *       400:
-   *         description: Already published
+   *         description: Already published or not authorized
    *       404:
    *         description: Course not found
    */
   async publishCourse(req, res, next) {
     try {
-      const course = await CourseService.publishCourse(req.params.courseId);
-      return success(res, course, 'Course published successfully');
+      // Verify course ownership
+      const course = await CourseService.getCourseById(req.params.courseId);
+      if (course.instructor_id !== req.user.id) {
+        return res.status(403).json({ success: false, message: 'Not authorized to publish this course' });
+      }
+
+      const publishedCourse = await CourseService.publishCourse(req.params.courseId);
+      return success(res, publishedCourse, 'Course published successfully');
     } catch (err) {
       next(err);
     }
@@ -200,6 +206,29 @@ const CourseController = {
     try {
       const result = await CourseService.deleteCourse(req.params.courseId);
       return success(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getCourseEnrollments(req, res, next) {
+    try {
+      const enrollments = await CourseService.getEnrollmentsByCourseId(req.params.courseId);
+      return success(res, enrollments);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * GET /api/courses/admin/all-enrollments
+   * Get all enrollments across all courses (for admin)
+   */
+  async getAllEnrollments(req, res, next) {
+    try {
+      const CourseModel = require('../models/course.model');
+      const enrollments = await CourseModel.getAllEnrollments();
+      return success(res, { enrollments });
     } catch (err) {
       next(err);
     }

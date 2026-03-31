@@ -121,6 +121,26 @@ const ExerciseModel = {
     );
     return rows;
   },
+
+  async findAll() {
+    const [rows] = await db.query(
+      `SELECT 
+         e.id,
+         e.chapter_id,
+         e.question,
+         e.type,
+         e.points,
+         e.created_at,
+         c.title AS chapter_title,
+         c.course_id,
+         co.title AS course_title
+       FROM exercises e
+       LEFT JOIN chapters c ON c.id = e.chapter_id AND c.deleted_at IS NULL
+       LEFT JOIN courses co ON co.id = c.course_id AND co.deleted_at IS NULL
+       ORDER BY co.title, c.title, e.id`
+    );
+    return rows;
+  },
 };
 
 module.exports = ExerciseModel;

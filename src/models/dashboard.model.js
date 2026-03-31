@@ -87,6 +87,30 @@ const DashboardModel = {
     );
     return rows[0].total;
   },
+
+  /**
+   * Get all students enrolled in instructor's courses with course details
+   */
+  async getInstructorStudents(instructorId) {
+    const [rows] = await db.query(
+      `SELECT 
+         u.id,
+         u.name,
+         u.email,
+         u.avatar,
+         COUNT(DISTINCT e.course_id) as course_count,
+         MIN(e.enrolled_at) as created_at,
+         GROUP_CONCAT(DISTINCT c.title ORDER BY c.title SEPARATOR ', ') as course_titles
+       FROM users u
+       JOIN enrollments e ON u.id = e.user_id
+       JOIN courses c ON e.course_id = c.id
+       WHERE c.instructor_id = ? AND c.deleted_at IS NULL
+       GROUP BY u.id, u.name, u.email, u.avatar
+       ORDER BY u.name ASC`,
+      [instructorId]
+    );
+    return rows;
+  },
 };
 
 module.exports = DashboardModel;

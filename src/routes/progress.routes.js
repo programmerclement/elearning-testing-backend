@@ -4,16 +4,16 @@ const router = require('express').Router();
 const controller = require('../controllers/progress.controller');
 const auth = require('../middlewares/auth.middleware');
 
-// Mark chapter as completed
-router.post('/', auth, controller.markChapterComplete);
-
-// Get progress for a specific course
-router.get('/:courseId', auth, controller.getCourseProgress);
-
-// Get all courses progress for user
+// GET all courses progress - MUST be before /:courseId
 router.get('/', auth, controller.getAllCoursesProgress);
 
-// Check if chapter is completed
+// Specific nested route
 router.get('/chapter/:chapterId/status', auth, controller.checkChapterCompletion);
+
+// POST mark chapter complete
+router.post('/', auth, controller.markChapterComplete);
+
+// GET single course progress
+router.get('/:courseId', auth, controller.getCourseProgress);
 
 module.exports = router;

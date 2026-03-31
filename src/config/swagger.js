@@ -6,10 +6,10 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'E-Learning & Course Management API',
+      title: 'Academia & Course Management API',
       version: '1.0.0',
       description:
-        'Complete production-ready backend API for an E-Learning platform. ' +
+        'Complete production-ready backend API for an Academia platform. ' +
         'Covers authentication, course creation, chapters, exercises, syllabuses, payments, and user progress.',
       contact: { name: 'API Support', email: 'support@elearn.com' },
     },

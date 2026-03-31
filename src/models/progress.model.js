@@ -79,20 +79,35 @@ const ProgressModel = {
    * Get all courses progress for a user
    */
   async getUserAllCoursesProgress(user_id) {
+    // First, check if user has any enrollments
+    const [enrollmentCheck] = await db.query(
+      `SELECT COUNT(*) as enrollment_count FROM enrollments WHERE user_id = ?`,
+      [user_id]
+    );
+    
+    if (enrollmentCheck[0].enrollment_count === 0) {
+      return [];
+    }
+
     const [rows] = await db.query(
       `SELECT 
          co.id,
          co.title,
          co.thumbnail,
-         COUNT(DISTINCT c.id) AS total_chapters,
-         COUNT(DISTINCT up.id) AS completed_chapters,
-         ROUND(COUNT(DISTINCT up.id) / COUNT(DISTINCT c.id) * 100) AS progress_percentage
+         COALESCE(COUNT(DISTINCT c.id), 0) AS total_chapters,
+         COALESCE(COUNT(DISTINCT up.id), 0) AS completed_chapters,
+         CASE 
+           WHEN COUNT(DISTINCT c.id) > 0 
+           THEN LEAST(100, ROUND((CAST(COUNT(DISTINCT up.id) AS DECIMAL) / CAST(COUNT(DISTINCT c.id) AS DECIMAL)) * 100))
+           ELSE 0
+         END AS progress_percentage,
+         e.completed_at
        FROM enrollments e
        INNER JOIN courses co ON co.id = e.course_id
        LEFT JOIN chapters c ON c.course_id = co.id AND c.deleted_at IS NULL
        LEFT JOIN user_progress up ON up.user_id = ? AND up.chapter_id = c.id AND up.completed = 1
        WHERE e.user_id = ?
-       GROUP BY co.id
+       GROUP BY co.id, e.id
        ORDER BY e.enrolled_at DESC`,
       [user_id, user_id]
     );

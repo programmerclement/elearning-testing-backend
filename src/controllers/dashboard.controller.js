@@ -154,6 +154,7 @@ const DashboardController = {
       // Total students enrolled in all courses
       const [enrollmentStats] = await pool.query(
         `SELECT COUNT(DISTINCT e.user_id) as total_students,
+                COUNT(e.id) as total_enrollments,
                 COALESCE(SUM(c.price), 0) as total_revenue
          FROM enrollments e
          JOIN courses c ON e.course_id = c.id
@@ -190,6 +191,7 @@ const DashboardController = {
         data: {
           totalCourses: courses.length,
           totalStudents: enrollmentStats[0]?.total_students || 0,
+          totalEnrollments: enrollmentStats[0]?.total_enrollments || 0,
           totalRevenue: parseFloat(enrollmentStats[0]?.total_revenue || 0),
           averageRating: parseFloat(ratingStats[0]?.average_rating || 0).toFixed(2),
           totalReviews: ratingStats[0]?.total_reviews || 0,
@@ -237,6 +239,26 @@ const DashboardController = {
         `SELECT COUNT(*) as total FROM chapters WHERE deleted_at IS NULL`
       );
 
+      // Total enrollments
+      const [enrollmentStats] = await pool.query(
+        `SELECT COUNT(*) as total FROM enrollments`
+      );
+
+      // Total reviews
+      const [reviewStats] = await pool.query(
+        `SELECT COUNT(*) as total FROM reviews`
+      );
+
+      // Total exercises
+      const [exerciseStats] = await pool.query(
+        `SELECT COUNT(*) as total FROM exercises`
+      );
+
+      // Total invoices
+      const [invoiceStats] = await pool.query(
+        `SELECT COUNT(*) as total FROM invoices`
+      );
+
       // Recent users
       const [recentUsers] = await pool.query(
         `SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 5`
@@ -267,12 +289,37 @@ const DashboardController = {
           courses: courseStats[0],
           revenue: revenueStats[0],
           totalChapters: chapterStats[0]?.total || 0,
+          enrollments: enrollmentStats[0],
+          reviews: reviewStats[0],
+          exercises: exerciseStats[0],
+          invoices: invoiceStats[0],
           recentUsers: recentUsers,
           recentTransactions: recentTransactions,
         },
       });
     } catch (error) {
       console.error('Get admin dashboard error:', error);
+      return errorResponse(res, error.message, 500);
+    }
+  },
+
+  /**
+   * GET /api/dashboard/instructor/students
+   * Get all students enrolled in instructor's courses
+   */
+  async getInstructorStudents(req, res) {
+    try {
+      const instructorId = req.user.id;
+      
+      const DashboardModel = require('../models/dashboard.model');
+      const students = await DashboardModel.getInstructorStudents(instructorId);
+
+      return successResponse(res, {
+        message: 'Instructor students data',
+        data: students,
+      });
+    } catch (error) {
+      console.error('Get instructor students error:', error);
       return errorResponse(res, error.message, 500);
     }
   },

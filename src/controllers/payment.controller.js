@@ -108,6 +108,27 @@ const PaymentController = {
       next(err);
     }
   },
+
+  /**
+   * @swagger
+   * /api/payments/my-invoices:
+   *   get:
+   *     summary: Get current user's invoices
+   *     tags: [Payments]
+   *     security:
+   *       - BearerAuth: []
+   *     responses:
+   *       200:
+   *         description: List of user's invoices with course details
+   */
+  async getUserInvoices(req, res, next) {
+    try {
+      const invoices = await PaymentService.getUserInvoices(req.user.id);
+      return success(res, invoices, 'User invoices retrieved successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = PaymentController;

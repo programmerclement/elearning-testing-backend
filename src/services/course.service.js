@@ -100,6 +100,13 @@ const CourseService = {
     if (!affected) throw notFound('Course not found');
     return { message: 'Course deleted successfully' };
   },
+
+  async getEnrollmentsByCourseId(id) {
+    const course = await CourseModel.findById(id);
+    if (!course) throw notFound('Course not found');
+    const enrollments = await CourseModel.getEnrollmentsByCourseId(id);
+    return enrollments;
+  },
 };
 
 module.exports = CourseService;

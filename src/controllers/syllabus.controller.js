@@ -267,6 +267,27 @@ const SyllabusController = {
       next(err);
     }
   },
+
+  /**
+   * Get all syllabus outlines (for admin)
+   * @swagger
+   * /api/syllabuses/outlines:
+   *   get:
+   *     summary: Get all syllabus outlines (admin only)
+   *     tags: [Syllabuses]
+   *     responses:
+   *       200:
+   *         description: List of all syllabus outlines
+   */
+  async getAllOutlines(req, res, next) {
+    try {
+      const SyllabusModel = require('../models/syllabus.model');
+      const outlines = await SyllabusModel.findAllOutlines();
+      return success(res, { outlines }, 'All syllabus outlines retrieved');
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = SyllabusController;

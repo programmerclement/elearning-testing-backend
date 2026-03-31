@@ -7,6 +7,9 @@ const auth       = require('../middlewares/auth.middleware');
 // Invoice preview — no auth required (public pricing preview)
 router.get('/invoices/preview', controller.previewInvoice);
 
+// Get user's invoices — authenticated
+router.get('/payments/my-invoices', auth, controller.getUserInvoices);
+
 // Get all invoices — authenticated admin only
 router.get('/payments', auth, controller.getAllInvoices);
 

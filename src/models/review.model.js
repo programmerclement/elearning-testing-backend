@@ -68,6 +68,30 @@ const ReviewModel = {
     );
     return result.affectedRows;
   },
+
+  async findAll() {
+    const [rows] = await db.query(
+      `SELECT 
+         r.id,
+         r.user_id,
+         r.course_id,
+         r.rating,
+         r.comment,
+         r.created_at,
+         r.updated_at,
+         u.name as user_name,
+         u.email as user_email,
+         u.avatar as user_avatar,
+         c.title as course_title,
+         c.instructor_id
+       FROM reviews r
+       INNER JOIN users u ON u.id = r.user_id
+       INNER JOIN courses c ON c.id = r.course_id
+       WHERE c.deleted_at IS NULL
+       ORDER BY r.created_at DESC`
+    );
+    return rows;
+  },
 };
 
 module.exports = ReviewModel;

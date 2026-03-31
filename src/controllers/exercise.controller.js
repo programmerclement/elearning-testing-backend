@@ -105,6 +105,19 @@ const ExerciseController = {
       next(err);
     }
   },
+
+  /**
+   * GET /api/exercises
+   * Get all exercises (for admin)
+   */
+  async getAllExercises(req, res, next) {
+    try {
+      const exercises = await ExerciseModel.findAll();
+      return success(res, { exercises });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = ExerciseController;

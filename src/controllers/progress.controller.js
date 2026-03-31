@@ -98,7 +98,18 @@ const ProgressController = {
         req.user.id
       );
 
-      return success(res, { courses: coursesProgress });
+      // Transform to match frontend expectations
+      const progress = coursesProgress.map(course => ({
+        course_id: course.id,
+        title: course.title,
+        thumbnail: course.thumbnail,
+        total_chapters: course.total_chapters,
+        completed_chapters: course.completed_chapters,
+        percentage: course.progress_percentage,
+        completed_at: course.completed_at
+      }));
+
+      return success(res, { progress });
     } catch (err) {
       next(err);
     }

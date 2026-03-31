@@ -155,6 +155,19 @@ const SyllabusModel = {
     );
     return result.affectedRows;
   },
-};
 
-module.exports = SyllabusModel;
+  /**
+   * Get all syllabus outlines (for admin viewing all outlines across all syllabuses)
+   */
+  async findAllOutlines() {
+    const [rows] = await db.query(
+      `SELECT so.*, s.title AS syllabus_title, s.id AS syllabus_id, c.id AS course_id, c.title AS course_title
+       FROM syllabus_outlines so
+       INNER JOIN syllabuses s ON so.syllabus_id = s.id
+       LEFT JOIN courses c ON s.course_id = c.id
+       WHERE so.deleted_at IS NULL
+       ORDER BY s.course_id, s.id, so.order_index ASC`
+    );
+    return rows;
+  },
+};
