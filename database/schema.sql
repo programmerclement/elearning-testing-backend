@@ -219,19 +219,17 @@ CREATE TABLE IF NOT EXISTS reviews (
 CREATE TABLE IF NOT EXISTS coupons (
   id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   code                  VARCHAR(50)         NOT NULL UNIQUE,
-  discount_type         ENUM('percentage','fixed') NOT NULL DEFAULT 'percentage',
-  discount_value        DECIMAL(10,2)       NOT NULL,
+  discount_percentage   DECIMAL(5,2)        NOT NULL COMMENT 'Discount percentage (0-100)',
   max_uses              INT UNSIGNED        NULL COMMENT 'NULL = unlimited',
   max_uses_per_user     INT UNSIGNED        NOT NULL DEFAULT 1,
-  expiry_date           DATETIME            NULL COMMENT 'NULL = no expiration',
+  expires_at            DATETIME            NULL COMMENT 'NULL = no expiration',
   description           TEXT                NULL,
-  is_deleted            TINYINT(1)          NOT NULL DEFAULT 0,
+  is_active             TINYINT(1)          NOT NULL DEFAULT 1,
   created_at            DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at            DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at            DATETIME            NULL,
   INDEX idx_coupons_code    (code),
-  INDEX idx_coupons_deleted (is_deleted),
-  INDEX idx_coupons_expiry  (expiry_date)
+  INDEX idx_coupons_active  (is_active),
+  INDEX idx_coupons_expiry  (expires_at)
 ) ENGINE=InnoDB;
 
 -- ============================================================

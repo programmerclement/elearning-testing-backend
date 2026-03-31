@@ -1,5 +1,6 @@
 'use strict';
 
+const db = require('../config/db');
 const CouponModel = require('../models/coupon.model');
 const { success, created, badRequest, notFound } = require('../utils/response');
 
@@ -236,14 +237,42 @@ const CouponController = {
    */
   async verifyCoupon(req, res, next) {
     try {
-      const coupon = await CouponModel.findByCode(req.params.code);
-      if (!coupon) throw notFound('Coupon code not found or inactive');
+      const code = (req.params.code || '').toUpperCase().trim();
+      
+      if (!code) throw badRequest('Coupon code is required');
+      
+      const coupon = await CouponModel.findByCode(code);
+      
+      if (!coupon) {
+        // Check if coupon exists but is inactive or expired
+        const inactiveQuery = 'SELECT id, is_active, expires_at FROM coupons WHERE code = ? LIMIT 1';
+        const [inactiveRows] = await db.query(inactiveQuery, [code]);
+        
+        if (inactiveRows && inactiveRows.length > 0) {
+          const inactive = inactiveRows[0];
+          if (!inactive.is_active) {
+            throw notFound('Coupon is no longer active');
+          }
+          if (inactive.expires_at && new Date(inactive.expires_at) <= new Date()) {
+            throw notFound('Coupon has expired');
+          }
+        }
+        
+        throw notFound('Invalid coupon code');
+      }
       
       // Get usage information
       const totalUsage = await CouponModel.getCouponTotalUsage(coupon.id);
       
       const response = {
-        ...coupon,
+        id: coupon.id,
+        code: coupon.code,
+        discount_percentage: coupon.discount_percentage,
+        is_active: coupon.is_active,
+        expires_at: coupon.expires_at,
+        max_uses: coupon.max_uses,
+        created_at: coupon.created_at,
+        updated_at: coupon.updated_at,
         usage_count: totalUsage,
         remaining_uses: coupon.max_uses ? coupon.max_uses - totalUsage : null
       };

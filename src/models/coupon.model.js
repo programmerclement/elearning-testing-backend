@@ -73,27 +73,52 @@ const CouponModel = {
   },
 
   async recordUsage(couponId, userId, orderId) {
-    const [result] = await db.query(
-      `INSERT INTO coupon_usage (coupon_id, user_id, order_id, created_at) VALUES (?, ?, ?, NOW())`,
-      [couponId, userId, orderId || null]
-    );
-    return result.insertId;
+    try {
+      const [result] = await db.query(
+        `INSERT INTO coupon_usage (coupon_id, user_id, order_id, created_at) VALUES (?, ?, ?, NOW())`,
+        [couponId, userId, orderId || null]
+      );
+      return result.insertId;
+    } catch (error) {
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        console.warn('⚠️  coupon_usage table not found. Skipping usage record.');
+        return null;
+      }
+      throw error;
+    }
   },
 
   async getUserCouponUsageCount(couponId, userId) {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS count FROM coupon_usage WHERE coupon_id = ? AND user_id = ?`,
-      [couponId, userId]
-    );
-    return rows[0]?.count || 0;
+    try {
+      const [rows] = await db.query(
+        `SELECT COUNT(*) AS count FROM coupon_usage WHERE coupon_id = ? AND user_id = ?`,
+        [couponId, userId]
+      );
+      return rows[0]?.count || 0;
+    } catch (error) {
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        console.warn('⚠️  coupon_usage table not found. Returning 0 usage.');
+        return 0;
+      }
+      throw error;
+    }
   },
 
   async getCouponTotalUsage(couponId) {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS count FROM coupon_usage WHERE coupon_id = ?`,
-      [couponId]
-    );
-    return rows[0]?.count || 0;
+    try {
+      const [rows] = await db.query(
+        `SELECT COUNT(*) AS count FROM coupon_usage WHERE coupon_id = ?`,
+        [couponId]
+      );
+      return rows[0]?.count || 0;
+    } catch (error) {
+      // If coupon_usage table doesn't exist, just return 0
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        console.warn('⚠️  coupon_usage table not found. Run database setup. Returning 0 usage.');
+        return 0;
+      }
+      throw error;
+    }
   },
 };
 
